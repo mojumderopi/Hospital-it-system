@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Staff Portal Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-6 font-sans">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div class="text-center mb-6">
+            <div class="bg-teal-600 text-white w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <i class="fa-solid fa-hospital-user text-xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-gray-800">Hospital Staff Portal</h1>
+            <p class="text-xs text-gray-500 mt-1">Sign in to access front desk or chamber</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Select Role</label>
+                <select id="roleSelect" class="w-full border border-gray-300 p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-teal-500">
+                    <option value="receptionist">Front Desk Receptionist</option>
+                    <option value="doctor">Consultant Doctor</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Username / Staff ID</label>
+                <input type="text" id="username" required placeholder="e.g. staff_admin" class="w-full border border-gray-300 p-3 rounded-xl text-sm focus:outline-none focus:border-teal-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                <input type="password" id="password" required placeholder="••••••••" class="w-full border border-gray-300 p-3 rounded-xl text-sm focus:outline-none focus:border-teal-500">
+            </div>
+            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-sm cursor-pointer">
+                Secure Login
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            let role = document.getElementById("roleSelect").value;
+            
+            if(role === "receptionist") {
+                alert("Logged in successfully as Receptionist!");
+                window.location.href = "index.html";
+            } else {
+                alert("Logged in successfully as Dr. Sarah Ahmed!");
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+</body>
+</html>

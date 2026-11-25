@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Patient Registration & Visit Intake</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <!-- Back Link -->
+        <div class="mb-4">
+            <a href="index.html" class="text-sm text-teal-600 font-semibold hover:underline flex items-center space-x-1">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Back to Queue Dashboard</span>
+            </a>
+        </div>
+        
+        <h2 class="text-xl font-bold text-gray-800 mb-2">New Patient Registration & Visit Intake</h2>
+        <p class="text-xs text-gray-500 mb-6">Search existing patient for follow-up or fill details for a new registration.</p>
+
+        <!-- Returning Patient Quick Search Bar -->
+        <div class="bg-teal-50 p-4 rounded-xl border border-teal-100 mb-6">
+            <label class="block text-xs font-bold text-teal-800 mb-1"><i class="fa-solid fa-magnifying-glass"></i> Returning Patient Quick Search (By Phone / ID)</label>
+            <div class="flex space-x-2">
+                <input type="text" id="searchQuery" placeholder="Enter Phone (e.g. 01712345678) or ID (e.g. PID-1001)" class="w-full bg-white border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:border-teal-500">
+                <button type="button" onclick="searchExistingPatient()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer shadow-sm">
+                    Fetch Data
+                </button>
+            </div>
+        </div>
+
+        <form id="registrationForm" class="space-y-6">
+            <!-- Section 1: Personal Information -->
+            <div>
+                <h3 class="text-xs font-bold text-teal-700 uppercase tracking-wider mb-3">1. Personal Information & Department</h3>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name *</label>
+                        <input type="text" id="name" required placeholder="e.g. Rahim Khan" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Phone Number * (Starts with 0, 11 digits)</label>
+                        <div class="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:border-teal-500">
+                            <span class="bg-gray-100 px-3 py-2.5 text-xs font-bold text-gray-600 border-r border-gray-300">+88</span>
+                            <input type="text" id="phone" required maxlength="11" placeholder="01712345678" oninput="formatPhoneNumber(this)" class="w-full p-2.5 text-sm focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Age *</label>
+                        <input type="number" id="age" required placeholder="Years" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Gender *</label>
+                        <select id="gender" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm bg-white focus:outline-none focus:border-teal-500">
+                            <option>Male</option><option>Female</option><option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Blood Group</label>
+                        <select id="bloodGroup" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm bg-white focus:outline-none focus:border-teal-500">
+                            <option value="Not Specified">Select</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Department *</label>
+                        <select id="department" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm bg-white focus:outline-none focus:border-teal-500">
+                            <option value="Medicine">Medicine</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Vitals -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Weight (Kg)</label>
+                        <input type="text" id="weight" placeholder="e.g. 70 Kg" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Height (cm)</label>
+                        <input type="text" id="height" placeholder="e.g. 170 cm" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Blood Pressure (BP)</label>
+                        <input type="text" id="bp" placeholder="e.g. 120/80" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- Section 2: Chief Complaints (10 Common Diseases) -->
+            <div>
+                <h3 class="text-xs font-bold text-teal-700 uppercase tracking-wider mb-3">2. Current Visit Reason & Symptoms</h3>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Main Disease / Chief Complaints * (Select or Type)</label>
+                    <input type="text" id="complaints" list="commonComplaintsList" required placeholder="Select from list or type custom complaint..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                    <datalist id="commonComplaintsList">
+                        <option value="Fever with Chills & Body Ache">
+                        <option value="Severe Headache & Migraine">
+                        <option value="Stomach Pain, Acidity & Gas">
+                        <option value="Chronic Cough & Cold">
+                        <option value="High Blood Pressure Check">
+                        <option value="Chest Pain & Palpitations">
+                        <option value="Loose Motion & Dehydration">
+                        <option value="Joint Pain & Arthritis">
+                        <option value="General Weakness & Fatigue">
+                        <option value="Skin Allergy & Rashes">
+                    </datalist>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <!-- Section 3: Major Medical History & Add Button -->
+            <div>
+                <h3 class="text-xs font-bold text-teal-700 uppercase tracking-wider mb-3">3. Major Medical History & Common Allergies</h3>
+                <p class="text-[11px] text-gray-400 mb-2">Select pre-existing chronic conditions or add new ones dynamically:</p>
+                
+                <!-- Expanded Checkbox Grid -->
+                <div id="historyCheckboxContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Diabetes" class="w-4 h-4 text-teal-600"><span>Diabetes</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Hypertension (BP)" class="w-4 h-4 text-teal-600"><span>Hypertension</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Asthma" class="w-4 h-4 text-teal-600"><span>Asthma</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Heart Disease" class="w-4 h-4 text-teal-600"><span>Heart Disease</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Kidney Disease" class="w-4 h-4 text-teal-600"><span>Kidney Disease</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Thyroid Disorder" class="w-4 h-4 text-teal-600"><span>Thyroid Disorder</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Gastritis / Ulcer" class="w-4 h-4 text-teal-600"><span>Gastritis / Ulcer</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Epilepsy" class="w-4 h-4 text-teal-600"><span>Epilepsy</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Liver Cirrhosis / Hepatitis" class="w-4 h-4 text-teal-600"><span>Liver Cirrhosis</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Stroke / Paralysis" class="w-4 h-4 text-teal-600"><span>Stroke / Paralysis</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Tuberculosis (TB)" class="w-4 h-4 text-teal-600"><span>Tuberculosis (TB)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 text-xs text-gray-700 bg-gray-50 p-2.5 rounded-lg border border-gray-200 cursor-pointer hover:bg-teal-50">
+                        <input type="checkbox" name="history" value="Cancer / Oncology" class="w-4 h-4 text-teal-600"><span>Cancer / Tumor</span>
+                    </label>
+                </div>
+
+                <!-- Dynamic Add New Disease Input Box & Button -->
+                <div class="flex items-center space-x-2 mb-4 bg-teal-50 p-3 rounded-xl border border-teal-100">
+                    <input type="text" id="newDiseaseInput" placeholder="Type new disease name to add..." class="w-full bg-white border border-gray-300 p-2 rounded-lg text-xs focus:outline-none focus:border-teal-500">
+                    <button type="button" onclick="addNewDiseaseCheckbox()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer shadow-sm">
+                        <i class="fa-solid fa-plus"></i> Add Disease
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Drug / Food Allergies</label>
+                        <input type="text" id="allergies" list="commonAllergies" placeholder="Select or type allergy..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:border-teal-500">
+                        <datalist id="commonAllergies">
+                            <option value="Penicillin Allergy">
+                            <option value="Sulfa Drug Allergy">
+                            <option value="Aspirin Allergy">
+                            <option value="Dust & Pollen Allergy">
+                            <option value="Seafood Allergy">
+                            <option value="Nuts Allergy">
+                        </datalist>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 rounded-xl text-sm transition shadow-sm cursor-pointer">
+                Save Patient Details & Generate Token ID
+            </button>
+        </form>
+    </div>
+
+    <!-- Script -->
+    <script>
+        // Restrict input to digits only and limit to 11 characters starting with 0
+        function formatPhoneNumber(input) {
+            let numbers = input.value.replace(/\D/g, '');
+            if (numbers.length > 0 && !numbers.startsWith('0')) {
+                numbers = '0' + numbers; // Ensure it starts with 0
+            }
+            if (numbers.length > 11) {
+                numbers = numbers.substring(0, 11);
+            }
+            input.value = numbers;
+        }
+
+        // Returning Patient Quick Search & Auto-Fill
+        function searchExistingPatient() {
+            let query = document.getElementById("searchQuery").value.trim();
+            if(!query) {
+                alert("Please enter a phone number or Patient ID to search!");
+                return;
+            }
+
+            let patients = JSON.parse(localStorage.getItem("clinic_patients")) || [];
+            let foundPatient = patients.find(p => p.uniqueId.toLowerCase() === query.toLowerCase() || p.phone.includes(query));
+
+            if(foundPatient) {
+                document.getElementById("name").value = foundPatient.name || "";
+                
+                // Clean phone number (extract digits after +88)
+                let cleanPhone = foundPatient.phone.replace("+88", "").trim();
+                document.getElementById("phone").value = cleanPhone;
+
+                document.getElementById("age").value = foundPatient.age || "";
+                document.getElementById("gender").value = foundPatient.gender || "Male";
+                document.getElementById("bloodGroup").value = foundPatient.bloodGroup || "Not Specified";
+                document.getElementById("department").value = foundPatient.department || "Medicine";
+                document.getElementById("weight").value = foundPatient.weight || "";
+                document.getElementById("height").value = foundPatient.height || "";
+                document.getElementById("bp").value = foundPatient.bp || "";
+                document.getElementById("complaints").value = foundPatient.complaints || "";
+                
+                if(foundPatient.allergies) {
+                    document.getElementById("allergies").value = foundPatient.allergies;
+                }
+
+                alert("Patient found! Previous records loaded successfully. You can edit or update info for today's visit.");
+            } else {
+                alert("No previous record found for this patient. Please fill out details as a new patient.");
+            }
+        }
+
+        // Dynamically add a new disease checkbox to the list
+        function addNewDiseaseCheckbox() {
+            let inputField = document.getElementById("newDiseaseInput");
+            let diseaseName = inputField.value.trim();
+
+            if (!diseaseName) {
+                alert("Please enter a disease name first!");
+                return;
+            }
+
+            let container = document.getElementById("historyCheckboxContainer");
+            let newLabel = document.createElement("label");
+            newLabel.className = "flex items-center space-x-2 text-xs text-gray-700 bg-teal-50/50 p-2.5 rounded-lg border border-teal-200 cursor-pointer hover:bg-teal-100 transition";
+            newLabel.innerHTML = `
+                <input type="checkbox" name="history" value="${diseaseName}" checked class="w-4 h-4 text-teal-600 rounded">
+                <span class="font-semibold text-teal-900">${diseaseName}</span>
+            `;
+
+            container.appendChild(newLabel);
+            inputField.value = "";
+        }
+
+        document.getElementById("registrationForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            let phoneInput = document.getElementById("phone").value.trim();
+            if (phoneInput.length !== 11 || !phoneInput.startsWith('0')) {
+                alert("Please enter a valid 11-digit mobile number starting with 0!");
+                return;
+            }
+
+            let fullPhone = "+88 " + phoneInput;
+
+            let selectedHistories = [];
+            document.querySelectorAll('input[name="history"]:checked').forEach((checkbox) => {
+                selectedHistories.push(checkbox.value);
+            });
+
+            let uniqueId = "PID-" + Math.floor(1000 + Math.random() * 9000);
+            let currentDate = new Date().toISOString().split('T')[0];
+
+            let patientData = {
+                uniqueId: uniqueId,
+                name: document.getElementById("name").value,
+                phone: fullPhone,
+                age: document.getElementById("age").value,
+                gender: document.getElementById("gender").value,
+                bloodGroup: document.getElementById("bloodGroup").value,
+                department: document.getElementById("department").value,
+                weight: document.getElementById("weight").value || "70 Kg",
+                height: document.getElementById("height").value || "170 cm",
+                bp: document.getElementById("bp").value || "120/80 mmHg",
+                complaints: document.getElementById("complaints").value,
+                medicalHistory: selectedHistories.join(", ") || "None",
+                allergies: document.getElementById("allergies").value || "None",
+                status: "Waiting",
+                date: currentDate
+            };
+
+            let patients = JSON.parse(localStorage.getItem("clinic_patients")) || [];
+            patients.push(patientData);
+            localStorage.setItem("clinic_patients", JSON.stringify(patients));
+
+            alert("Patient registered successfully!\nToken ID: " + uniqueId);
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>

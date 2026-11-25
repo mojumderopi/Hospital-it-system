@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Front Desk & Queue Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- PRINT STYLING FOR INVOICE MODAL -->
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #invoicePrintArea, #invoicePrintArea * { visibility: visible; }
+            #invoicePrintArea {
+                position: absolute; left: 0; top: 0; width: 100%;
+                padding: 20px; margin: 0; background: white !important;
+                border: none !important; box-shadow: none !important;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6 font-sans">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Top Navigation / Header -->
+        <div class="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-teal-600 text-white p-3 rounded-xl shadow-sm">
+                    <i class="fa-solid fa-hospital text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">City Care Hospital & Diagnostic</h1>
+                    <p class="text-xs text-gray-500">Front Desk & Digital Queue Management</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="register.html" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-2">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>Register New Patient</span>
+                </a>
+                <a href="login.html" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold transition">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Controls Bar: Call Next, Call Selected, Date Search -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+            
+            <!-- Left: Call Next & Call Selected Buttons -->
+            <div class="flex items-center space-x-2">
+                <button onclick="callNextPatient()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center space-x-1.5">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span>Call Next</span>
+                </button>
+                <button onclick="callSelectedPatients()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer flex items-center space-x-1.5">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                    <span>Call Selected</span>
+                </button>
+            </div>
+
+            <!-- Middle: Date-wise Search -->
+            <div class="flex items-center space-x-2">
+                <input type="date" id="searchDate" class="border border-gray-300 p-2 rounded-xl text-xs bg-white focus:outline-none focus:border-teal-500">
+                <button onclick="searchByDate()" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search Date
+                </button>
+                <button onclick="resetDateSearch()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-2 rounded-xl text-xs font-semibold">
+                    Reset
+                </button>
+            </div>
+
+            <!-- Right: Quick Stats -->
+            <div class="text-right text-xs text-gray-500">
+                <span>Waiting: <strong id="countWaiting" class="text-amber-600">0</strong></span> | 
+                <span>Total: <strong id="totalCount" class="text-gray-800">0</strong></span>
+            </div>
+        </div>
+
+        <!-- Status Filter Tabs with Dynamic Counts -->
+        <div class="flex flex-wrap gap-2 bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
+            <button onclick="filterByStatus('All')" id="tab-All" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-teal-600 text-white shadow-sm cursor-pointer flex items-center space-x-1.5">
+                <span>All Patients</span><span id="badge-All" class="bg-teal-700 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+            </button>
+            <button onclick="filterByStatus('Waiting')" id="tab-Waiting" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center space-x-1.5">
+                <span>Waiting</span><span id="badge-Waiting" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+            </button>
+            <button onclick="filterByStatus('In-Consultation')" id="tab-In-Consultation" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center space-x-1.5">
+                <span>In-Consultation</span><span id="badge-In-Consultation" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+            </button>
+            <button onclick="filterByStatus('Completed')" id="tab-Completed" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center space-x-1.5">
+                <span>Completed</span><span id="badge-Completed" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+            </button>
+            <button onclick="filterByStatus('Cancelled')" id="tab-Cancelled" class="px-4 py-2 rounded-xl text-xs font-bold transition bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center space-x-1.5">
+                <span>Cancelled</span><span id="badge-Cancelled" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-md text-[10px]">0</span>
+            </button>
+        </div>
+
+        <!-- Patient Queue Table -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+                <h2 class="font-bold text-gray-800 text-base"><i class="fa-solid fa-list-check text-teal-600"></i> Patient Queue & Selection List</h2>
+                <span id="currentFilterLabel" class="text-xs text-teal-600 font-bold bg-teal-50 px-3 py-1 rounded-lg border border-teal-100">Showing: All Patients</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-gray-50 text-gray-400 text-xs uppercase border-b border-gray-200">
+                        <tr>
+                            <th class="p-4 w-10"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-teal-600 rounded"></th>
+                            <th class="p-4">Token ID</th>
+                            <th class="p-4">Patient Name</th>
+                            <th class="p-4">Reg. Date</th>
+                            <th class="p-4">Symptoms</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-center">Billing / Invoice</th>
+                            <th class="p-4 text-right">Actions / Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queueTableBody" class="divide-y divide-gray-100 text-sm">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INVOICE MODAL (POP-UP) -->
+    <div id="invoiceModal" class="fixed inset-0 bg-black/50 backdrop-blur-xs hidden justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative">
+            <button onclick="closeInvoiceModal()" class="no-print absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-lg cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Printable Invoice Area -->
+            <div id="invoicePrintArea" class="space-y-4 pt-2">
+                <div class="text-center border-b border-gray-200 pb-3">
+                    <h2 class="text-base font-bold text-gray-900">City Care Hospital & Diagnostic</h2>
+                    <p class="text-[11px] text-gray-500">Kuril Biswa Road, Dhaka - 1229 | Ph: 09612345678</p>
+                    <span class="inline-block mt-2 bg-teal-50 text-teal-700 font-bold text-[10px] px-2 py-0.5 rounded uppercase">Official Money Receipt & Invoice</span>
+                </div>
+
+                <div class="text-xs space-y-1 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="flex justify-between"><span><b>Invoice No:</b> <span id="invNo">INV-1001</span></span><span><b>Date:</b> <span id="invDate">---</span></span></div>
+                    <div><b>Patient Name:</b> <span id="invName" class="font-bold text-gray-800">---</span></div>
+                    <div><b>Token ID:</b> <span id="invId" class="text-teal-600 font-bold">---</span> | <b>Mobile:</b> <span id="invPhone">---</span></div>
+                </div>
+
+                <!-- Pharmacy Purchase Toggle Option -->
+                <div class="no-print bg-teal-50 p-2.5 rounded-xl border border-teal-200 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-teal-900"><i class="fa-solid fa-pills"></i> Buy Medicines from Hospital Pharmacy?</span>
+                    <input type="checkbox" id="buyMedicineToggle" checked onchange="recalculateInvoiceTotal()" class="w-4 h-4 text-teal-600 rounded cursor-pointer">
+                </div>
+
+                <!-- Bill Items Table -->
+                <table class="w-full text-left text-xs border-t border-b border-gray-300">
+                    <thead>
+                        <tr class="border-b border-gray-200 text-gray-500">
+                            <th class="py-1.5">Description (Consultation, Tests & Medicines)</th>
+                            <th class="py-1.5 text-right">Amount (৳)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceItemsList" class="divide-y divide-gray-100">
+                        <!-- Dynamic items -->
+                    </tbody>
+                </table>
+
+                <div class="space-y-1 text-xs border-t border-gray-200 pt-2">
+                    <div class="flex justify-between font-bold text-sm">
+                        <span>Total Payable:</span>
+                        <span class="text-teal-700">৳ <span id="invTotalAmount">0</span> BDT</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span>Payment Status:</span>
+                        <select id="invStatusSelect" onchange="updatePaymentStatus()" class="no-print border border-gray-300 p-1 rounded text-xs font-bold bg-white cursor-pointer">
+                            <option value="Unpaid" class="text-red-600">Unpaid</option>
+                            <option value="Paid" class="text-green-600">Paid</option>
+                        </select>
+                        <span id="printPaymentStatus" class="hidden print-show font-bold text-green-700">Paid</span>
+                    </div>
+                </div>
+
+                <div class="text-center pt-4 border-t border-gray-100 text-[10px] text-gray-400">
+                    <p>Thank you for choosing City Care Hospital & Diagnostic.</p>
+                </div>
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div class="no-print flex space-x-2 pt-4 mt-4 border-t border-gray-100">
+                <button onclick="window.print()" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-print"></i><span>Print Invoice</span>
+                </button>
+                <button onclick="closeInvoiceModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-xl text-xs font-semibold transition cursor-pointer">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        let allPatients = [];
+        let currentStatusFilter = 'All';
+        let currentPatientIdForInvoice = null;
+        let currentActivePatientData = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            loadQueue();
+        });
+
+        function loadQueue() {
+            let todayStr = new Date().toISOString().split('T')[0];
+            allPatients = JSON.parse(localStorage.getItem("clinic_patients")) || [
+                { uniqueId: "PID-1001", name: "Rahim Khan", age: 35, gender: "Male", phone: "01711223344", complaints: "Fever with chills", status: "Waiting", date: todayStr, isEmergency: false },
+                { uniqueId: "PID-1002", name: "Fatema Begum", age: 28, gender: "Female", phone: "01811223344", complaints: "Severe chest pain", status: "Waiting", date: todayStr, isEmergency: true }
+            ];
+            
+            sortQueuePriority();
+            localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            updateCountsAndRender(allPatients);
+        }
+
+        function sortQueuePriority() {
+            allPatients.sort((a, b) => {
+                let statA = a.status || "Waiting";
+                let statB = b.status || "Waiting";
+                if (statA === "Waiting" && statB === "Waiting") {
+                    return (b.isEmergency === true ? 1 : 0) - (a.isEmergency === true ? 1 : 0);
+                }
+                return 0;
+            });
+        }
+
+        function updateCountsAndRender(patientsList) {
+            let waiting = 0, inConsult = 0, completed = 0, cancelled = 0;
+            
+            allPatients.forEach(p => {
+                let stat = p.status || "Waiting";
+                if(stat === "Waiting") waiting++;
+                else if(stat === "In-Consultation") inConsult++;
+                else if(stat === "Completed") completed++;
+                else if(stat === "Cancelled") cancelled++;
+            });
+
+            // Update top quick stats
+            document.getElementById("countWaiting").innerText = waiting;
+            document.getElementById("totalCount").innerText = allPatients.length;
+
+            // Update tab badge numbers
+            document.getElementById("badge-All").innerText = allPatients.length;
+            document.getElementById("badge-Waiting").innerText = waiting;
+            document.getElementById("badge-In-Consultation").innerText = inConsult;
+            document.getElementById("badge-Completed").innerText = completed;
+            document.getElementById("badge-Cancelled").innerText = cancelled;
+
+            filterByStatus(currentStatusFilter, patientsList);
+        }
+
+        function filterByStatus(status, customList = allPatients) {
+            currentStatusFilter = status;
+            document.getElementById("currentFilterLabel").innerText = "Showing: " + status;
+
+            ['All', 'Waiting', 'In-Consultation', 'Completed', 'Cancelled'].forEach(s => {
+                let btn = document.getElementById("tab-" + s);
+                let badge = document.getElementById("badge-" + s);
+                if(btn) {
+                    if(s === status) {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-teal-600 text-white shadow-sm cursor-pointer flex items-center space-x-1.5";
+                        if(badge) badge.className = "bg-teal-700 text-white px-1.5 py-0.5 rounded-md text-[10px]";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center space-x-1.5";
+                        if(badge) badge.className = "bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-md text-[10px]";
+                    }
+                }
+            });
+
+            let filtered = customList;
+            if(status !== 'All') {
+                filtered = customList.filter(p => (p.status || "Waiting") === status);
+            }
+
+            renderTable(filtered);
+        }
+
+        function renderTable(patients) {
+            let tbody = document.getElementById("queueTableBody");
+            tbody.innerHTML = "";
+
+            if(patients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-400 text-xs">No patients found.</td></tr>`;
+                return;
+            }
+
+            patients.forEach((p) => {
+                let originalIndex = allPatients.findIndex(item => item.uniqueId === p.uniqueId);
+                let stat = p.status || "Waiting";
+                let regDate = p.date || new Date().toISOString().split('T')[0];
+
+                let badgeColor = "bg-amber-100 text-amber-700";
+                if(stat === "In-Consultation") badgeColor = "bg-blue-100 text-blue-700";
+                else if(stat === "Completed") badgeColor = "bg-emerald-100 text-emerald-700";
+                else if(stat === "Cancelled") badgeColor = "bg-red-100 text-red-700";
+
+                let payStatus = p.paymentStatus || "Unpaid";
+                let payBadge = payStatus === "Paid"
+                    ? `<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-[10px] font-bold">Paid</span>`
+                    : `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">Unpaid</span>`;
+
+                let rowBg = p.isEmergency && stat === "Waiting" ? "bg-red-50/60 border-l-4 border-red-500" : "hover:bg-gray-50";
+
+                let tr = document.createElement("tr");
+                tr.className = `${rowBg} transition`;
+                tr.innerHTML = `
+                    <td class="p-4"><input type="checkbox" class="patient-checkbox w-4 h-4 text-teal-600 rounded" data-index="${originalIndex}"></td>
+                    <td class="p-4 font-bold text-teal-600">
+                        ${p.uniqueId} 
+                        ${p.isEmergency ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded ml-1 font-semibold">🚨 EMERGENCY</span>' : ''}
+                    </td>
+                    <td class="p-4 font-semibold text-gray-800">${p.name} <br><span class="text-[11px] text-gray-400 font-normal">${p.age} yrs / ${p.gender}</span></td>
+                    <td class="p-4 text-gray-600">${regDate}</td>
+                    <td class="p-4 text-gray-600 truncate max-w-xs">${p.complaints}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeColor}">${stat}</span></td>
+                    <td class="p-4 text-center">
+                        <button onclick="openInvoiceModal('${p.uniqueId}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer flex items-center justify-center space-x-1 mx-auto shadow-xs">
+                            <i class="fa-solid fa-receipt"></i><span>Bill & ${payBadge}</span>
+                        </button>
+                    </td>
+                    <td class="p-4 text-right space-x-1">
+                        <button onclick="movePatientToTop(${originalIndex})" title="Move to Top" class="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1.5 rounded-lg text-xs shadow-sm cursor-pointer" ${stat !== 'Waiting' ? 'disabled opacity-50' : ''}>
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button onclick="startConsultation(${originalIndex})" class="bg-teal-600 hover:bg-teal-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold shadow-sm cursor-pointer">
+                            <i class="fa-solid fa-stethoscope"></i> Consult
+                        </button>
+                        <select onchange="updateStatus(${originalIndex}, this.value)" class="border border-gray-300 p-1 rounded text-xs bg-white cursor-pointer">
+                            <option value="" disabled selected>Status</option>
+                            <option value="Waiting">Waiting</option>
+                            <option value="In-Consultation">Consulting</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 1. Call Next Waiting Patient
+        function callNextPatient() {
+            let nextIndex = allPatients.findIndex(p => (p.status || "Waiting") === "Waiting");
+            if(nextIndex !== -1) {
+                allPatients[nextIndex].status = "In-Consultation";
+                sortQueuePriority();
+                localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+                localStorage.setItem("activePatient", JSON.stringify(allPatients[nextIndex]));
+                alert("Calling Next Patient: " + allPatients[nextIndex].name + " (ID: " + allPatients[nextIndex].uniqueId + ")");
+                window.location.href = "prescription.html";
+            } else {
+                alert("No waiting patients in the queue!");
+            }
+        }
+
+        // 2. Select Multiple Patients & Call Them
+        function toggleSelectAll(masterCheckbox) {
+            let checkboxes = document.querySelectorAll('.patient-checkbox');
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        function callSelectedPatients() {
+            let checkedBoxes = document.querySelectorAll('.patient-checkbox:checked');
+            if(checkedBoxes.length === 0) {
+                alert("Please select at least one patient using the checkbox mark!");
+                return;
+            }
+
+            let names = [];
+            checkedBoxes.forEach(cb => {
+                let idx = cb.getAttribute('data-index');
+                allPatients[idx].status = "In-Consultation";
+                names.push(allPatients[idx].name + " (" + allPatients[idx].uniqueId + ")");
+            });
+
+            sortQueuePriority();
+            localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            let firstIdx = checkedBoxes[0].getAttribute('data-index');
+            localStorage.setItem("activePatient", JSON.stringify(allPatients[firstIdx]));
+
+            alert("Calling Selected Patients:\n- " + names.join("\n- "));
+            window.location.href = "prescription.html";
+        }
+
+        // 3. Date-wise Search
+        function searchByDate() {
+            let selectedDate = document.getElementById("searchDate").value;
+            if(!selectedDate) {
+                alert("Please select a date first!");
+                return;
+            }
+
+            let filteredByDate = allPatients.filter(p => (p.date || new Date().toISOString().split('T')[0]) === selectedDate);
+            document.getElementById("currentFilterLabel").innerText = "Date List: " + selectedDate;
+            renderTable(filteredByDate);
+        }
+
+        function resetDateSearch() {
+            document.getElementById("searchDate").value = "";
+            updateCountsAndRender(allPatients);
+        }
+
+        function movePatientToTop(index) {
+            let patient = allPatients.splice(index, 1)[0];
+            allPatients.unshift(patient);
+            localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            updateCountsAndRender(allPatients);
+        }
+
+        function updateStatus(index, newStatus) {
+            allPatients[index].status = newStatus;
+            sortQueuePriority();
+            localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            updateCountsAndRender(allPatients);
+        }
+
+        function startConsultation(index) {
+            allPatients[index].status = "In-Consultation";
+            localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            localStorage.setItem("activePatient", JSON.stringify(allPatients[index]));
+            window.location.href = "prescription.html";
+        }
+
+        // Invoice Modal Functions with Dynamic Prescription Sync & Pharmacy Toggle
+        function openInvoiceModal(uniqueId) {
+            let patient = allPatients.find(p => p.uniqueId === uniqueId);
+            if(!patient) return;
+
+            currentPatientIdForInvoice = uniqueId;
+            currentActivePatientData = patient;
+
+            document.getElementById("invNo").innerText = "INV-" + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById("invDate").innerText = new Date().toLocaleDateString();
+            document.getElementById("invName").innerText = patient.name;
+            document.getElementById("invId").innerText = patient.uniqueId;
+            document.getElementById("invPhone").innerText = patient.phone;
+            document.getElementById("invStatusSelect").value = patient.paymentStatus || "Unpaid";
+            document.getElementById("printPaymentStatus").innerText = patient.paymentStatus || "Unpaid";
+            document.getElementById("buyMedicineToggle").checked = true;
+
+            recalculateInvoiceTotal();
+
+            document.getElementById("invoiceModal").classList.remove("hidden");
+            document.getElementById("invoiceModal").classList.add("flex");
+        }
+
+        function recalculateInvoiceTotal() {
+            let patient = currentActivePatientData;
+            if(!patient) return;
+
+            let buyMedicine = document.getElementById("buyMedicineToggle").checked;
+            let itemsTable = document.getElementById("invoiceItemsList");
+            
+            itemsTable.innerHTML = `
+                <tr>
+                    <td class="py-1.5 font-medium">Doctor Consultation Fee</td>
+                    <td class="py-1.5 text-right font-medium">৳ 500</td>
+                </tr>
+                <tr>
+                    <td class="py-1.5 font-medium">Hospital Registration & Vitals</td>
+                    <td class="py-1.5 text-right font-medium">৳ 100</td>
+                </tr>
+            `;
+
+            let total = 600;
+
+            if (buyMedicine && patient.prescribedMedicines && patient.prescribedMedicines.length > 0) {
+                patient.prescribedMedicines.forEach(med => {
+                    itemsTable.innerHTML += `
+                        <tr>
+                            <td class="py-1.5 text-gray-600 pl-2">- ${med.name} (${med.dosage})</td>
+                            <td class="py-1.5 text-right font-medium">৳ ${med.price}</td>
+                        </tr>
+                    `;
+                    total += med.price;
+                });
+            } else if (buyMedicine) {
+                itemsTable.innerHTML += `
+                    <tr>
+                        <td class="py-1.5 text-gray-400 italic pl-2">No prescription medicines found from doctor</td>
+                        <td class="py-1.5 text-right font-medium">৳ 0</td>
+                    </tr>
+                `;
+            } else {
+                itemsTable.innerHTML += `
+                    <tr>
+                        <td class="py-1.5 text-amber-700 italic pl-2 font-medium">ℹ️ Medicines purchased from outside pharmacy</td>
+                        <td class="py-1.5 text-right font-medium">৳ 0</td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById("invTotalAmount").innerText = total;
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById("invoiceModal").classList.remove("flex");
+            document.getElementById("invoiceModal").classList.add("hidden");
+            updateCountsAndRender(allPatients);
+        }
+
+        function updatePaymentStatus() {
+            let status = document.getElementById("invStatusSelect").value;
+            document.getElementById("printPaymentStatus").innerText = status;
+
+            let patient = allPatients.find(p => p.uniqueId === currentPatientIdForInvoice);
+            if(patient) {
+                patient.paymentStatus = status;
+                localStorage.setItem("clinic_patients", JSON.stringify(allPatients));
+            }
+        }
+    </script>
+</body>
+</html>
